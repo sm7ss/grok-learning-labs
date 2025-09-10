@@ -20,7 +20,7 @@ class EstrategiaData(str, Enum):
     CLEAN = 'clean'
     WINDOW = 'window'
     AGG = 'agg'
-    GROUP = 'group'
+    GROUP_BY = 'group_by'
 
 class EstrategiaClean(str, Enum): 
     DROP_NULLS = 'drop_nulls'
@@ -35,19 +35,76 @@ class EstrategiaAgg(str, Enum):
     MIN = 'min'
     MAX = 'max'
 
-@dataclass
-class EstarategiaGeneral: 
-    data = [x.value for x in EstrategiaData]
-    clean = [x.value for x in EstrategiaClean]
-    window = [x.value for x in EstrategiaWindow]
-    agg = [x.value for x in EstrategiaAgg]
+def validacion_data(lista): 
+    for indice, diccionario in enumerate(lista): 
+        name = diccionario.get('name', lista[indice])
+        if name not in [x.value for x in EstrategiaData]: 
+            logger.error(f'La estrategia {name} no es valida')
 
-class Etl(BaseModel): 
-    input_path: str
-    output_paht: str
-    stages: List[dict] = Field(min_length=1)
-    
-    @field_validator('stages')
-    def validar_lista(cls, v): 
-        pass
+def estrategia_valida(lista): 
+    for diccionario in lista: 
+        ops = diccionario.get('ops', None)
+        for estrategia in ops: 
+            estrategia_data = estrategia.split(': ')[0].strip()
+            if estrategia_data in [x.value for x in EstrategiaWindow]: 
+                continue
+            elif estrategia_data in [x.value for x in EstrategiaClean]: 
+                continue
+            elif estrategia_data in [x.value for x in EstrategiaData]: 
+                continue
+            else: 
+                logger.error(f'La estrategia {estrategia_data} no está disponible')
+                raise ValueError(f'La estrategia {estrategia_data} no está disponible')
+
+def validacion_diccionario(df: pl.LazyFrame, lista): 
+    group = []
+    window = []
+    clean = []
+    schema = df.collect_schema()
+    for li in lista: 
+        ops = li.get('ops', None)
+        for elemento in ops: 
+            if '{' in str(elemento): 
+                if 'group_by' in str(elemento): 
+                    lit = elemento.split(', ')
+                    for li in lit: 
+                        nueva_lista = li.split(': ')
+                        lis = [x.strip('{').strip('}') for x in nueva_lista]
+                        
+                        for objeto in lis: 
+                            if objeto in [x.value for x in EstrategiaData]: 
+                                group.append(objeto)
+                            elif objeto in [x.value for x in EstrategiaAgg]: 
+                                group.append(objeto)
+                            elif objeto in schema: 
+                                group.append(objeto)
+                            else: 
+                                logger.error(f'{objeto} no se encunetra en el DataFrame o no es valido')
+                                raise ValueError(f'{objeto} no se encunetra en el DataFrame o no es valido')
+                elif 'rolling' in str(elemento): 
+                    elemento = elemento.strip('}').split('{')
+                    estrategia = elemento[0].strip(': ')
+                    window.append(estrategia)
+                    validacion = elemento[1].split(', ')
+                    for val in validacion: 
+                        validacion = val.split(': ')
+                        if validacion[1] in schema: 
+                            if schema[validacion[1]].is_numeric(): 
+                                window.append(validacion)
+                        elif int(validacion[1]): 
+                            window.append(validacion)
+                        else: 
+                            logger.error(f'{validacion[1]} no es valida, pues no puede existir la columna o es una columna no numerica')
+            else: 
+                elementos = elemento.split(': ')
+                for objeto in elementos: 
+                    if objeto in schema: 
+                        clean.append(objeto)
+                    elif objeto in [x.value for x in EstrategiaClean]: 
+                        clean.append(objeto)
+                    else: 
+                        logger.error(f'{objeto} no es valido o no se encuentra en el DataFrame')
+                        raise ValueError(f'{objeto} no es valido o no se encuentra en el DataFrame')
+
+
 
