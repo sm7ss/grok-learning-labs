@@ -1,10 +1,16 @@
 etl:
-  input_path: ###
+  input_path: ### 
   output_path: 'processed.parquet'
-  stages: 
-    [
-      {name: "clean", ops: ["drop_nulls: age"]}, 
-      {name: "window", ops: ["rolling_mean: {col: age, window: 5, over: user_id}"]}, 
-      {name: "agg", ops: ["group_by: user_id, agg: {mean: mb_used}"]}
-    ]
+  clean_data: 
+    operation: 'drop_nulls'
+    col: 'age'
+  window_data: 
+    operation: 'rolling_mean'
+    col: 'age'
+    window: 5
+    over: 'user_id'
+  agg_data: 
+    operation: 'mean'
+    col: 'age'
+    group_by: 'user_id'
 
