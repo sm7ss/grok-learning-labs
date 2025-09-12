@@ -1,0 +1,5 @@
+[Config_Join]
+archivos = [###]
+output_file = 'output_file.parquet'
+on = 'id_cliente'
+how = 'inner'

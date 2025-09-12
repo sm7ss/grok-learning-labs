@@ -1,0 +1,9 @@
+[Config]
+file_csv = ###
+output_file = 'Output_Toml.toml'
+streaming = 'streaming'
+
+[Rolling_Columns]
+rolling_columns = ['age']
+window_size = 2
+window_shift = 1
