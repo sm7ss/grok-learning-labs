@@ -1,0 +1,7 @@
+[data]
+input_path = ###
+output_path = "edad_promedio.parquet"
+filter_column = "age"
+filter_value = 30
+group_by = "city"
+agg_function = "sum(age)"

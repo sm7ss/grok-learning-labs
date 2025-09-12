@@ -1,0 +1,5 @@
+[data]
+input_clientes = ###
+input_pedidos = "pedidos.csv"
+output_path = "clientes_pedidos.parquet"
+join_column = "cliente_id"
