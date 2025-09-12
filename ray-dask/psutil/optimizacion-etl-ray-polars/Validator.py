@@ -3,7 +3,6 @@ import logging
 import polars as pl
 from pydantic import BaseModel, Field, model_validator, field_validator
 from Strategy import EstrategiaAgg, EstrategiaWindow, EstrategiaClean
-from typing import Optional
 from pathlib import Path
 
 #Config logging 
@@ -28,9 +27,9 @@ class AggData(BaseModel):
 class etl(BaseModel): 
     input_path: str
     output_path: str
-    clean_data: Optional[CleanData]
-    window_data: Optional[WindowData]
-    agg_data: Optional[AggData]
+    clean_data: CleanData
+    window_data: WindowData
+    agg_data: AggData
     
     @field_validator('input_path')
     def archivo_existente(cls, v): 
