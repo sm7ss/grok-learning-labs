@@ -1,0 +1,14 @@
+compute:
+  use_ray: true
+  chunk_size: 1000000
+  streaming: true
+  memory_limit: "4GB"
+  partition_by: ["user_id"]
+
+etl:
+  input_path: "/home/arbolitos7/Documents/ArbolitosMiCasita/SeaAndFishes/LakeLife_Toml_Prefect/Ejercicios_Intermedio/megaline_users.csv"
+  output_path: "features"
+  feature_columns: ["age"]
+  window_sizes: [3]
+  lags: [1]
+  rank_method: "dense"

@@ -1,0 +1,16 @@
+data: 
+  input_path: '/home/arbolitos7/Documents/ArbolitosMiCasita/SeaAndFishes/LakeLife_Toml_Prefect/Ejercicios_Intermedio/megaline_users.csv'
+  output_path: 'Escalado_datos'
+
+compute:
+  use_ray: false
+  chunk_size: 1000000
+  streaming: true
+  partition_by: ["user_id"]
+
+ml:
+  learning_rate: 0.01
+  scaler: "minmax"
+  feature_columns: ["age"]
+  aggregations:
+    age: "sum"
