@@ -5,7 +5,7 @@ compute:
   memory_limit: "2GB"
   partition_by: ["user_id"]
 etl:
-  input_paths: ["/home/arbolitos7/Documents/ArbolitosMiCasita/SeaAndFishes/LakeLife_Toml_Prefect/Ejercicos_Intermedio_DaskPolars/V1.01/megaline_internet.csv", "/home/arbolitos7/Documents/ArbolitosMiCasita/SeaAndFishes/LakeLife_Toml_Prefect/Ejercicios_Intermedio/megaline_users.csv"]
+  input_paths: [###]
   output_path: "joined.parquet"
   join_on: "user_id"
   join_type: "inner"
