@@ -1,0 +1,15 @@
+[compute]
+use_dask = true 
+streaming = 'streaming'
+chunk_size = 10000
+memory_limit = "4GB"
+
+[path]
+input_path_data = ###
+output_path_data = 'FeatureEngineer.parquet'
+
+[etl]
+estrategia_rolling = "rolling_mean"
+feature_columns = ['user_id']
+window_size = [3]
+lags = [2]

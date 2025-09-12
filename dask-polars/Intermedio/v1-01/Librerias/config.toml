@@ -1,0 +1,33 @@
+[compute]
+use_dask = true
+chunk_size = 1000000
+streaming = "streaming"
+memory_limit = "4GB"
+partition_by= ["user_id"]
+
+[manage_estrategy]
+estrategy_function = "join_data"
+
+[data_input_output]
+input_path = ###
+output_path = "features.parquet"
+
+[rolling_data]
+estrategia = 'rolling_sum'
+feature_columns = ["user_id"]
+window_sizes = [3, 7]
+lags = [1, 2]
+
+[ml]
+learning_rate = 0.01
+scaler = "minmax"
+feature_columns = ["age"]
+aggregations = { "age" = "sum", "user_id" = "mean"}
+
+[join_data]
+join_filter = true 
+join_on = "user_id"
+join_type = "inner"
+valor_then = "Alto"
+valor_otherwise = "Bajo"
+filter_post_join = ['user_id > 5000']

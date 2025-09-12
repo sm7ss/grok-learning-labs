@@ -1,0 +1,22 @@
+[compute]
+use_dask = true
+chunk_size = 1000000
+streaming = true
+memory_limit = "4GB"
+
+[rolling_data]
+input_path = ###
+feature_columns = ["user_id"]
+window_sizes = [3, 7]
+lags = [1, 2]
+
+[ml]
+learning_rate = 0.01
+scaler = "minmax"
+feature_columns = ["age"]
+aggregations = { "age" = "sum", "user_id" = "mean"}
+
+[join_data]
+output_path = "joined.parquet"
+join_on = "cliente_id"
+join_type = "inner"
