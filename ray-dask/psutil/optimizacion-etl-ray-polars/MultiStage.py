@@ -6,6 +6,7 @@ import logging
 from pydantic import BaseModel
 from ReadData import ReadFile
 from Frame import GetFrame
+from ResourcesAndTracking import ResorceConfig
 
 #Configuracion del logging 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s-%(levelname)s-%(message)s')
@@ -45,6 +46,7 @@ class Pipeline:
         self.archivo = archivo
         self.model = ReadFile(archivo=self.archivo).read_file()
         self.agg_data = self.model.agg_data
+        self.tamaño_archivo = self.model.input_path.stat().st_size
     
     def batches(self, table: pa.Table) -> pa.Table: 
         clean = CleanData(model=self.model)
@@ -64,12 +66,16 @@ class Pipeline:
         return result.collect(engine='streaming').to_arrow()
     
     def pipeline_ray(self):
-        with ray.init(num_cpus=4, object_store_memory=2*1e9):
+        config = ResorceConfig().init_ray(tamaño_archivo=self.tamaño_archivo)
+        with ray.init(**config):
             ds = GetFrame(archivo=self.archivo).ray_frame()
+            
+            filas_total = ds.count()
+            batch_size = max(10000, filas_total // (config['num_cpus']*10))
             
             ds_transformed = ds.map_batches(
                 lambda batch: self.batches(table=batch), 
-                batch_size=10000, 
+                batch_size=batch_size, 
                 batch_format='pyarrow'
             )
             grouped = ds_transformed.groupby(self.agg_data.group_by)
@@ -77,4 +83,4 @@ class Pipeline:
                 lambda table: self.group_batches(table=table), 
                 batch_format='pyarrow'
             )
-            grouped_transformed.write_parquet(self.model.output_path.replace('.parquet', ''))
+            grouped_transformed.write_parquet(self.model.output_path.replace('.parquet', '_wrap/'))
