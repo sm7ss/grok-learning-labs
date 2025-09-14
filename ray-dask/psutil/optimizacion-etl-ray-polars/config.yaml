@@ -1,16 +1,31 @@
-etl:
-  input_path: ### 
+data:
+  input_path: ###
   output_path: 'processed.parquet'
-  clean_data: 
-    operation: 'drop_nulls'
-    col: 'age'
-  window_data: 
-    operation: 'rolling_mean'
-    col: 'age'
-    window: 5
-    over: 'user_id'
-  agg_data: 
-    operation: 'mean'
-    col: 'age'
-    group_by: 'user_id'
+
+clean_data: 
+  operation: 'drop_nulls'
+  col: 'age'
+
+window_data: 
+  operation: 'rolling_mean'
+  col: 'age'
+  window: 5
+  over: 'user_id'
+
+agg_data: 
+  operation: 'mean'
+  col: 'age'
+  group_by: 'user_id'
+
+join_data: 
+  input_paths: [###]
+  join_on: 'user_id'
+  join_type: 'left'
+  post_filter: 
+    imbalance_handle: true
+    col: 'mb_used'
+    threshold: 1000
+
+# prefect con retries: 3
+
 
