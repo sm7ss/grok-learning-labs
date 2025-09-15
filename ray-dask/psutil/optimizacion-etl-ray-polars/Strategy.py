@@ -15,3 +15,9 @@ class EstrategiaAgg(str, Enum):
     SUM = 'sum'
     MIN = 'min'
     MAX = 'max'
+
+class EstrategiaJoin(str, Enum): 
+    LEFT = 'left'
+    RIGHT = 'right'
+    INNER = 'inner'
+    OUTER = 'outer'
