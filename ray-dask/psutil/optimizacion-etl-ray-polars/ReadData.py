@@ -10,20 +10,13 @@ from Validator import etl
 logging.basicConfig(level=logging.INFO, format='%(asctime)s-%(levelname)s-%(messsage)s')
 logger = logging.getLogger(__name__)
 
-class ReadToml: 
-    def __init__(self, archivo: str):
-        self.archivo = Path(archivo)
-        if not self.archivo.exists(): 
-            logger.error(f'El archivo {self.archivo.name} no existe')
-            raise FileNotFoundError(f'El archivo {self.archivo.name} no existe')
-    
     def read_toml(self) -> BaseModel:
         nombre_archivo = self.archivo.name 
         try: 
             with open(self.archivo, 'rb') as file: 
                 read = tomli.load(file)
             logger.info(f'Se leyó correctamente el archivo {nombre_archivo}')
-            validador = etl(**read['etl'])
+            validador = etl(**read)
             logger.info(f'Se validó correctamente el archivo {nombre_archivo}')
             return validador
         except tomli.TOMLDecodeError: 
@@ -43,7 +36,7 @@ class ReadYaml:
             with open(self.archivo, 'r') as file: 
                 read = yaml.safe_load(file)
             logger.info(f'Se leyó correctamente el archivo {nombre_archivo}')
-            validador = etl(**read['etl'])
+            validador = etl(**read)
             logger.info(f'Se validó correctamente el archivo {nombre_archivo}')
             return validador
         except yaml.YAMLError: 
