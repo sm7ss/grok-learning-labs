@@ -88,11 +88,7 @@ class etl(BaseModel):
     @model_validator(mode='after')
     def columnas_existentes_join(self): 
         input_data = self.data.input_path
-        if isinstance(input_data, list): 
-            if self.join_data is None:
-                logger.error('Se necesita información para poder hacer join entre archivos')
-                raise ValueError('Se necesita información para poder hacer join entre archivos')
-            
+        if self.join_data is not None:
             lista = []
             for archivo in input_data: 
                 if archivo.suffix == '.csv': 
@@ -117,7 +113,10 @@ class etl(BaseModel):
                 if not schema_1[post_filter.col].is_numeric() or not schema_2[post_filter.col].is_numeric(): 
                     logger.error(f'La columna {post_filter.col} debe ser una columna numerica')
                     raise ValueError(f'La columna {post_filter.col} debe ser una columna numerica')
-        
+        return self
+    
+    @model_validator(mode='after')
+    def columnas_existentes_general(self): 
         if self.data.suffix == '.csv': 
             schema = pl.scan_csv(self.data.input_path).collect_schema()
         else: 
@@ -149,5 +148,4 @@ class etl(BaseModel):
             if self.agg_data.group_by not in schema: 
                 logger.error(f'La columna {self.agg_data.group_by} no existe en el Schema')
                 raise ValueError(f'La columna {self.agg_data.group_by} no existe en el Schema')
-        
         return self
