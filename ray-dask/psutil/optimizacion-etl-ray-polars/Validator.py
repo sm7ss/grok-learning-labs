@@ -1,10 +1,10 @@
 import logging
 import polars as pl
 from pydantic import BaseModel, Field, model_validator, field_validator
-
-from Strategy import EstrategiaAgg, EstrategiaWindow, EstrategiaClean, EstrategiaJoin
 from typing import Union, List, Optional
 from pathlib import Path
+
+from Strategy import EstrategiaAgg, EstrategiaWindow, EstrategiaClean, EstrategiaJoin
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s-%(levelname)s-%(message)s')
 logger = logging.getLogger(__name__)
@@ -88,7 +88,11 @@ class etl(BaseModel):
     @model_validator(mode='after')
     def columnas_existentes_join(self): 
         input_data = self.data.input_path
-        if self.join_data is not None:
+        if isinstance(input_data, list): 
+            if self.join_data is None:
+                logger.error('Se necesita información para poder hacer join entre archivos')
+                raise ValueError('Se necesita información para poder hacer join entre archivos')
+            
             lista = []
             for archivo in input_data: 
                 if archivo.suffix == '.csv': 
@@ -106,17 +110,15 @@ class etl(BaseModel):
             
             post_filter = self.join_data.post_filter
             if post_filter is not None: 
-                if post_filter.col not in schema_1 or post_filter.col not in schema_2:
+                if post_filter.col not in schema_1 and post_filter.col not in schema_2:
                     logger.error(f'La columna {post_filter.col} no sé encuentra en schema')
                     raise ValueError(f'La columna {post_filter.col} no sé encuentra en schema')
                 
-                if not schema_1[post_filter.col].is_numeric() or not schema_2[post_filter.col].is_numeric(): 
+                if not schema_1[post_filter.col].is_numeric() and not schema_2[post_filter.col].is_numeric(): 
                     logger.error(f'La columna {post_filter.col} debe ser una columna numerica')
                     raise ValueError(f'La columna {post_filter.col} debe ser una columna numerica')
-        return self
-    
-    @model_validator(mode='after')
-    def columnas_existentes_general(self): 
+            return self
+        
         if self.data.suffix == '.csv': 
             schema = pl.scan_csv(self.data.input_path).collect_schema()
         else: 
@@ -148,4 +150,5 @@ class etl(BaseModel):
             if self.agg_data.group_by not in schema: 
                 logger.error(f'La columna {self.agg_data.group_by} no existe en el Schema')
                 raise ValueError(f'La columna {self.agg_data.group_by} no existe en el Schema')
+        
         return self
