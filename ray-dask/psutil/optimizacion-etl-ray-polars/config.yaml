@@ -18,14 +18,9 @@ agg_data:
   group_by: 'user_id'
 
 join_data: 
-  input_paths: [###]
   join_on: 'user_id'
   join_type: 'left'
   post_filter: 
-    imbalance_handle: true
-    col: 'mb_used'
-    threshold: 1000
-
-# prefect con retries: 3
+    operations: ['age < 45']
 
 
