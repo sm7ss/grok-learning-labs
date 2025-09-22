@@ -69,9 +69,7 @@ class AggDataConfig(BaseModel):
     group_by: str
 
 class PostFilterConfig(BaseModel): 
-    imbalance_handle: bool
-    col: str 
-    threshold: int = Field(gt=0)
+    operations: List[str] = Field(min_length=1)
 
 class JoinDataConfig(BaseModel): 
     join_on: str 
@@ -110,13 +108,22 @@ class etl(BaseModel):
             
             post_filter = self.join_data.post_filter
             if post_filter is not None: 
-                if post_filter.col not in schema_1 and post_filter.col not in schema_2:
-                    logger.error(f'La columna {post_filter.col} no sé encuentra en schema')
-                    raise ValueError(f'La columna {post_filter.col} no sé encuentra en schema')
-                
-                if not schema_1[post_filter.col].is_numeric() and not schema_2[post_filter.col].is_numeric(): 
-                    logger.error(f'La columna {post_filter.col} debe ser una columna numerica')
-                    raise ValueError(f'La columna {post_filter.col} debe ser una columna numerica')
+                for val in post_filter.operations: 
+                    columna, comparador, valor = val.split()
+                    
+                    if not columna in schema_1 and not columna in schema_2: 
+                        logger.error(f'La columna {columna} no sé encuentra en schema')
+                        raise ValueError(f'La columna {columna} no sé encuentra en schema')
+                    
+                    if not schema_1[columna].is_numeric() and not schema_2[columna].is_numeric(): 
+                        logger.error(f'La columna {columna} debe ser una columna numerica')
+                        raise ValueError(f'La columna {columna} debe ser una columna numerica')
+                    
+                    if comparador not in ['<', '>', '==', '>=', '<=']: 
+                        raise ValueError(f'El comparador {comparador} no es valido')
+                    
+                    if isinstance(valor, (int, float)): 
+                        raise ValueError(f'El valor {valor} debe ser numerico')
             return self
         
         if self.data.suffix == '.csv': 
